@@ -17,7 +17,7 @@ CodeMirror.defineMode("garbio", function()
                 return "string";
             }
 
-            if (stream.match(/function|if|else|display|while/)) 
+            if (stream.match(/function|if|else|var|display|while/)) 
             {
                 return "keyword";
             }
