@@ -13,6 +13,9 @@ static AST_T* builtin_function_print(visitor_T* visitor, AST_T** args, int args_
         {
         case AST_STRING: printf("%s\n", visited_ast->string_value);
             break;
+
+        case AST_BOOLEAN: printf("%s\n", visited_ast->boolean_value ? "true" : "false");
+            break;
         
         default: printf("%p\n", visited_ast);
             break;
@@ -33,22 +36,36 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node)
 {        
     switch (node->type)
     {
-        case AST_VARIABLE_DEFINITION: return visitor_visit_variable_definition(visitor, node);
+        case AST_VARIABLE_DEFINITION: 
+            return visitor_visit_variable_definition(visitor, node);
             break;
 
-        case AST_FUNCTION_DEFINITION: return visitor_visit_function_definition(visitor, node);
+        case AST_FUNCTION_DEFINITION: 
+            return visitor_visit_function_definition(visitor, node);
             break;
 
-        case AST_VARIABLE: return visitor_visit_variable(visitor, node);
+        case AST_VARIABLE: 
+            return visitor_visit_variable(visitor, node);
             break;
 
-        case AST_FUNCTION_CALL: return visitor_visit_function_call(visitor, node);
+        case AST_FUNCTION_CALL: 
+            return visitor_visit_function_call(visitor, node);
             break;
 
-        case AST_STRING: return visitor_visit_string(visitor, node);
+        case AST_STRING:   
+            return visitor_visit_string(visitor, node);
             break; 
 
-        case AST_COMPOUND: return visitor_visit_compound(visitor, node);
+        case AST_COMPOUND: 
+            return visitor_visit_compound(visitor, node);
+            break;
+
+        case AST_BOOLEAN: 
+            return visitor_visit_boolean(visitor, node);
+            break;
+
+        case AST_IF: 
+            return visitor_visit_if(visitor, node);
             break;
 
         case AST_NOOP: return node;
@@ -138,6 +155,40 @@ AST_T* visitor_visit_compound(visitor_T* visitor, AST_T* node)
     for (int i = 0; i < node->compound_size; i++)
     {
         visitor_visit(visitor, node->compound_value[i]);
+    }
+
+    return init_ast(AST_NOOP);
+}
+
+AST_T* visitor_visit_boolean(visitor_T* visitor, AST_T* node)
+{
+    return node;
+}
+
+AST_T* visitor_visit_if(visitor_T* visitor, AST_T* node)
+{
+    // Check condition
+    AST_T* condition = visitor_visit(visitor, node->if_condition);
+
+    if (condition->boolean_value)
+    {
+        return visitor_visit(visitor, node->if_body);
+    }
+    else
+    {
+        for (size_t i = 0; i < node->if_elseif_conditions_size; i++)
+        {
+            AST_T* elseif_condition = visitor_visit(visitor, node->if_elseif_conditions[i]);
+            if (elseif_condition->boolean_value)
+            {
+                return visitor_visit(visitor, node->if_elseif_bodies[i]);
+            }
+        }
+
+        if (node->if_else_body)
+        {
+            return visitor_visit(visitor, node->if_else_body);
+        }
     }
 
     return init_ast(AST_NOOP);

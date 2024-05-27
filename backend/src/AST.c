@@ -32,5 +32,17 @@ AST_T* init_ast(int type)
     ast->compound_value = (void*) 0;
     ast->compound_size = 0;
 
+    /* AST_BOOLEAN */
+    ast->boolean_value = 0;
+
+    /* AST_IF_ELSE */
+    ast->if_condition = (void*) 0;
+    ast->if_body = (void*) 0;
+    ast->if_elseif_conditions = (void*) 0;
+    ast->if_elseif_conditions_size = 0;
+    ast->if_elseif_bodies = (void*) 0;
+    ast->if_elseif_bodies_size = 0;
+    ast->if_else_body = (void*) 0;
+
     return ast;
 }

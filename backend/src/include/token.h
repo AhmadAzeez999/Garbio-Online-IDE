@@ -14,7 +14,12 @@ typedef struct TOKEN_STRUCT
         TOKEN_LEFTBRACE,
         TOKEN_RIGHTBRACE,
         TOKEN_COMMA,
-        TOKEN_EOF
+        TOKEN_EOF,
+        TOKEN_TRUE,
+        TOKEN_FALSE,
+        TOKEN_IF,
+        TOKEN_ELSEIF,
+        TOKEN_ELSE
     } type;
 
     char* value;

@@ -12,6 +12,10 @@ typedef struct AST_STRUCT
         AST_FUNCTION_CALL,
         AST_STRING,
         AST_COMPOUND,
+        AST_BOOLEAN,
+        AST_IF,
+        AST_ELSEIF,
+        AST_ELSE,
         AST_NOOP // No operation
     } type;
 
@@ -42,6 +46,18 @@ typedef struct AST_STRUCT
     /* AST_COMPOUND */
     struct AST_STRUCT** compound_value;
     size_t compound_size;
+
+    /* AST_BOOLEAN */
+    int boolean_value;
+
+    /* AST_IF_ELSE */
+    struct AST_STRUCT* if_condition;
+    struct AST_STRUCT* if_body;
+    struct AST_STRUCT** if_elseif_conditions;
+    size_t if_elseif_conditions_size;
+    struct AST_STRUCT** if_elseif_bodies;
+    size_t if_elseif_bodies_size;
+    struct AST_STRUCT* if_else_body;
 
 } AST_T;
 

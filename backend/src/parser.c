@@ -30,7 +30,7 @@ void parser_eat(parser_T* parser, int token_type)
     }
     else
     {
-        printf("Unexpected token '%s', wiht type %d",
+        printf("Unexpected token '%s', with type %d \n",
         parser->current_token->value,
         parser->current_token->type
         );
@@ -48,7 +48,10 @@ AST_T* parser_parse_statement(parser_T* parser, scope_T* scope)
 {
     switch (parser->current_token->type)
     {
-        case TOKEN_ID: return parser_parse_id(parser, scope);
+        case TOKEN_ID: 
+            return parser_parse_id(parser, scope);
+        case TOKEN_IF:
+            return parser_parse_if(parser, scope);
     
         break;
     default:
@@ -93,10 +96,20 @@ AST_T* parser_parse_expression(parser_T* parser, scope_T* scope)
 {
     switch (parser->current_token->type)
     {
-        case TOKEN_STRING: return parser_parse_string(parser, scope);
+        case TOKEN_STRING: 
+            return parser_parse_string(parser, scope);
             break;
 
-        case TOKEN_ID: return parser_parse_id(parser, scope);
+        case TOKEN_ID: 
+            return parser_parse_id(parser, scope);
+            break;
+
+        case TOKEN_TRUE: 
+            return parser_parse_boolean(parser, scope, 1);
+            break;
+
+        case TOKEN_FALSE: 
+            return parser_parse_boolean(parser, scope, 0);
             break;
         
         default:
@@ -108,7 +121,7 @@ AST_T* parser_parse_expression(parser_T* parser, scope_T* scope)
 
 AST_T* parser_parse_factor(parser_T* parser, scope_T* scope)
 {
-
+    
 }
 
 AST_T* parser_parse_term(parser_T* parser, scope_T* scope)
@@ -123,24 +136,27 @@ AST_T* parser_parse_function_call(parser_T* parser, scope_T* scope)
     function_call->function_call_name = parser->prev_token->value;
     parser_eat(parser, TOKEN_LEFTPAREN);
 
-    // Allocating memory for function call araguments
-    function_call->function_call_arguments = calloc(1, sizeof(struct AST_STRUCT*));
-
-    AST_T* ast_expression = parser_parse_expression(parser, scope);
-    function_call->function_call_arguments[0] = ast_expression;
-    function_call->function_call_arguments_size += 1;
-
-    while (parser->current_token->type == TOKEN_COMMA)
+    if (parser->current_token->type != TOKEN_RIGHTPAREN) // Checks if there are any args
     {
-        parser_eat(parser, TOKEN_COMMA);
+        // Allocating memory for function call araguments
+        function_call->function_call_arguments = calloc(1, sizeof(struct AST_STRUCT*));
 
         AST_T* ast_expression = parser_parse_expression(parser, scope);
+        function_call->function_call_arguments[0] = ast_expression;
         function_call->function_call_arguments_size += 1;
-        function_call->function_call_arguments = realloc(
-            function_call->function_call_arguments,
-            function_call->function_call_arguments_size * sizeof(struct AST_STRUCT*)
-        );
-        function_call->function_call_arguments[function_call->function_call_arguments_size-1] = ast_expression;
+
+        while (parser->current_token->type == TOKEN_COMMA)
+        {
+            parser_eat(parser, TOKEN_COMMA);
+
+            AST_T* ast_expression = parser_parse_expression(parser, scope);
+            function_call->function_call_arguments_size += 1;
+            function_call->function_call_arguments = realloc(
+                function_call->function_call_arguments,
+                function_call->function_call_arguments_size * sizeof(struct AST_STRUCT*)
+            );
+            function_call->function_call_arguments[function_call->function_call_arguments_size-1] = ast_expression;
+        }
     }
 
     parser_eat(parser, TOKEN_RIGHTPAREN);
@@ -156,6 +172,7 @@ AST_T* parser_parse_variable_definition(parser_T* parser, scope_T* scope)
     char* variable_definition_variable_name = parser->current_token->value;
     parser_eat(parser, TOKEN_ID); // var name
     parser_eat(parser, TOKEN_EQUALS);
+
     AST_T* variable_definition_value = parser_parse_expression(parser, scope);
 
     AST_T* variable_definition = init_ast(AST_VARIABLE_DEFINITION);
@@ -182,26 +199,29 @@ AST_T* parser_parse_function_definition(parser_T* parser, scope_T* scope)
 
     parser_eat(parser, TOKEN_LEFTPAREN);
 
-    ast->function_definition_args = calloc(1, sizeof(struct AST_STRUCT*));
-
-    AST_T* arg = parser_parse_variable(parser, scope);
-    ast->function_definition_args_size += 1;
-    ast->function_definition_args[ast->function_definition_args_size - 1] = arg;
-
-    while (parser->current_token->type == TOKEN_COMMA)
+    if (parser->current_token->type != TOKEN_RIGHTPAREN) // Checks if there are any args
     {
-        parser_eat(parser, TOKEN_COMMA);
-
-        ast->function_definition_args_size += 1;
-
-        ast->function_definition_args = 
-        realloc(
-            ast->function_definition_args, 
-            ast->function_definition_args_size * sizeof(struct AST_STRUCT*)
-        );
+        ast->function_definition_args = calloc(1, sizeof(struct AST_STRUCT*));
 
         AST_T* arg = parser_parse_variable(parser, scope);
+        ast->function_definition_args_size += 1;
         ast->function_definition_args[ast->function_definition_args_size - 1] = arg;
+
+        while (parser->current_token->type == TOKEN_COMMA)
+        {
+            parser_eat(parser, TOKEN_COMMA);
+
+            ast->function_definition_args_size += 1;
+
+            ast->function_definition_args = 
+            realloc(
+                ast->function_definition_args, 
+                ast->function_definition_args_size * sizeof(struct AST_STRUCT*)
+            );
+
+            AST_T* arg = parser_parse_variable(parser, scope);
+            ast->function_definition_args[ast->function_definition_args_size - 1] = arg;
+        }
     }
 
     parser_eat(parser, TOKEN_RIGHTPAREN);
@@ -260,3 +280,76 @@ AST_T* parser_parse_id(parser_T* parser, scope_T* scope)
         return parser_parse_variable(parser, scope);
     }
 }
+
+AST_T* parser_parse_boolean(parser_T* parser, scope_T* scope, int value)
+{
+    AST_T* ast_boolean = init_ast(AST_BOOLEAN);
+    ast_boolean->boolean_value = value;
+
+    parser_eat(parser, value ? TOKEN_TRUE : TOKEN_FALSE);
+
+    ast_boolean->scope = scope;
+
+    return ast_boolean;
+}
+
+AST_T* parser_parse_if(parser_T* parser, scope_T* scope)
+{
+    parser_eat(parser, TOKEN_IF);
+    parser_eat(parser, TOKEN_LEFTPAREN);
+
+    AST_T* condition = parser_parse_expression(parser, scope);
+
+    parser_eat(parser, TOKEN_RIGHTPAREN);
+    parser_eat(parser, TOKEN_LEFTBRACE);
+
+    AST_T* body = parser_parse_statements(parser, scope);
+
+    parser_eat(parser, TOKEN_RIGHTBRACE);
+
+    AST_T* ast_if = init_ast(AST_IF);
+    ast_if->if_condition = condition;
+    ast_if->if_body = body;
+
+    while (parser->current_token->type == TOKEN_ELSEIF)
+    {
+        parser_eat(parser, TOKEN_ELSEIF);
+        parser_eat(parser, TOKEN_LEFTPAREN);
+
+        AST_T* elseif_condition = parser_parse_expression(parser, scope);
+
+        parser_eat(parser, TOKEN_RIGHTPAREN);
+        parser_eat(parser, TOKEN_LEFTBRACE);
+
+        AST_T* elseif_body = parser_parse_statements(parser, scope);
+
+        parser_eat(parser, TOKEN_RIGHTBRACE);
+
+        ast_if->if_elseif_conditions = realloc(
+            ast_if->if_elseif_conditions,
+            (ast_if->if_elseif_conditions_size + 1) * sizeof(AST_T*)
+        );
+
+        ast_if->if_elseif_bodies = realloc(
+            ast_if->if_elseif_bodies,
+            (ast_if->if_elseif_bodies_size + 1) * sizeof(AST_T*)
+        );
+
+        ast_if->if_elseif_conditions[ast_if->if_elseif_conditions_size++] = elseif_condition;
+        ast_if->if_elseif_bodies[ast_if->if_elseif_bodies_size++] = elseif_body;
+    }
+
+    if (parser->current_token->type == TOKEN_ELSE)
+    {
+        parser_eat(parser, TOKEN_ELSE);
+        parser_eat(parser, TOKEN_LEFTBRACE);
+
+        AST_T* else_body = parser_parse_statements(parser, scope);
+
+        parser_eat(parser, TOKEN_RIGHTBRACE);
+        ast_if->if_else_body = else_body;
+    }
+
+    return ast_if;
+}
+

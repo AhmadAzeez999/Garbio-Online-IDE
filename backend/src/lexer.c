@@ -38,9 +38,6 @@ token_T* lexer_get_next_token(lexer_T* lexer)
         if (lexer->c == ' ' || lexer->c == 10)
             lexer_skip_whitespace(lexer);
 
-        if (isalnum(lexer->c))
-            return lexer_collect_id(lexer);
-
         if (lexer->c == '"')
             return lexer_collect_string(lexer);
 
@@ -74,6 +71,34 @@ token_T* lexer_get_next_token(lexer_T* lexer)
                 return lexer_advance_with_token(lexer, init_token(TOKEN_COMMA, lexer_get_current_char_as_string(lexer)));
             
             break;
+        }
+
+        if (isalnum(lexer->c))
+        {
+            token_T* id_token = lexer_collect_id(lexer);
+
+            if (strcmp(id_token->value, "true") == 0)
+            {
+                id_token->type = TOKEN_TRUE;
+            }
+            else if (strcmp(id_token->value, "false") == 0)
+            {
+                id_token->type = TOKEN_FALSE;
+            }
+            else if (strcmp(id_token->value, "if") == 0)
+            {
+                id_token->type = TOKEN_IF;
+            }
+            else if (strcmp(id_token->value, "elseif") == 0)
+            {
+                id_token->type = TOKEN_ELSEIF;
+            }
+            else if (strcmp(id_token->value, "else") == 0)
+            {
+                id_token->type = TOKEN_ELSE;
+            }
+
+            return id_token;
         }
     }
 
