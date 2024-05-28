@@ -19,7 +19,12 @@ typedef struct TOKEN_STRUCT
         TOKEN_FALSE,
         TOKEN_IF,
         TOKEN_ELSEIF,
-        TOKEN_ELSE
+        TOKEN_ELSE,
+        TOKEN_NUMBER,
+        TOKEN_PLUS,
+        TOKEN_MINUS,
+        TOKEN_MUL,
+        TOKEN_DIV
     } type;
 
     char* value;

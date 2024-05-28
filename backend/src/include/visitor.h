@@ -29,4 +29,8 @@ AST_T* visitor_visit_boolean(visitor_T* visitor, AST_T* node);
 
 AST_T* visitor_visit_if(visitor_T* visitor, AST_T* node);
 
+AST_T* visitor_visit_number(visitor_T* visitor, AST_T* node);
+
+AST_T* visitor_visit_binop(visitor_T* visitor, AST_T* node);
+
 #endif

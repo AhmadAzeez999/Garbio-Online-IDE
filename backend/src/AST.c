@@ -44,5 +44,13 @@ AST_T* init_ast(int type)
     ast->if_elseif_bodies_size = 0;
     ast->if_else_body = (void*) 0;
 
+    /* AST_NUMBER */
+    ast->string_value;
+
+    /* AST_BINOP */
+    ast->binop_left = (void*) 0;
+    ast->binop_right = (void*) 0;
+    ast->op = 0;
+
     return ast;
 }

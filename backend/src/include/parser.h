@@ -25,9 +25,9 @@ AST_T* parser_parse_statements(parser_T* parser, scope_T* scope);
 
 AST_T* parser_parse_expression(parser_T* parser, scope_T* scope);
 
-AST_T* parser_parse_factor(parser_T* parser, scope_T* scope);
+AST_T* parser_parse_binop(parser_T* parser, scope_T* scope);
 
-AST_T* parser_parse_term(parser_T* parser, scope_T* scope);
+AST_T* parser_parse_primary(parser_T* parser, scope_T* scope);
 
 AST_T* parser_parse_function_call(parser_T* parser, scope_T* scope);
 
@@ -44,5 +44,7 @@ AST_T* parser_parse_id(parser_T* parser, scope_T* scope);
 AST_T* parser_parse_boolean(parser_T* parser, scope_T* scope, int value);
 
 AST_T* parser_parse_if(parser_T* parser, scope_T* scope);
+
+AST_T* parser_parse_number(parser_T* parser, scope_T* scope);
 
 #endif

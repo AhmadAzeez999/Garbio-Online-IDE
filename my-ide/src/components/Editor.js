@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/material.css';
+import 'codemirror/addon/edit/closebrackets';
 import '../modes/garbio-mode';
 const Editor = ({ onCodeChange }) => 
 {
@@ -16,6 +17,7 @@ const Editor = ({ onCodeChange }) =>
 				mode: 'garbio',
 				theme: 'material',
 				lineNumbers: true,
+				autoCloseBrackets: true,
 			}}
 			onBeforeChange={(editor, data, value) => 
 			{

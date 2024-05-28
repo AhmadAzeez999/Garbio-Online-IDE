@@ -35,11 +35,20 @@ token_T* lexer_get_next_token(lexer_T* lexer)
 {
     while (lexer->c != '\0' && lexer->index < strlen(lexer->contents))
     {
+        if (lexer->c == '#')
+        {
+            lexer_skip_comment(lexer);
+            continue;
+        }
+
         if (lexer->c == ' ' || lexer->c == 10)
             lexer_skip_whitespace(lexer);
 
         if (lexer->c == '"')
             return lexer_collect_string(lexer);
+
+        if (isdigit(lexer->c))
+            return lexer_collect_number(lexer);
 
         switch (lexer->c)
         {
@@ -69,6 +78,22 @@ token_T* lexer_get_next_token(lexer_T* lexer)
             break; 
             case ',': 
                 return lexer_advance_with_token(lexer, init_token(TOKEN_COMMA, lexer_get_current_char_as_string(lexer)));
+            
+            break;
+            case '+': 
+                return lexer_advance_with_token(lexer, init_token(TOKEN_PLUS, lexer_get_current_char_as_string(lexer)));
+            
+            break;
+            case '-': 
+                return lexer_advance_with_token(lexer, init_token(TOKEN_MINUS, lexer_get_current_char_as_string(lexer)));
+            
+            break;
+            case '*': 
+                return lexer_advance_with_token(lexer, init_token(TOKEN_MUL, lexer_get_current_char_as_string(lexer)));
+            
+            break;
+            case '/': 
+                return lexer_advance_with_token(lexer, init_token(TOKEN_DIV, lexer_get_current_char_as_string(lexer)));
             
             break;
         }
@@ -127,6 +152,20 @@ token_T* lexer_collect_string(lexer_T* lexer)
     return init_token(TOKEN_STRING, value);
 }
 
+token_T* lexer_collect_number(lexer_T* lexer)
+{
+    char* value = calloc(1, sizeof(char));
+    while(isdigit(lexer->c))
+    {
+        char* s = lexer_get_current_char_as_string(lexer);
+        value = realloc(value, (strlen(value) + strlen(s) + 1));
+        strcat(value, s);
+        lexer_advance(lexer);
+    }
+
+    return init_token(TOKEN_NUMBER, value);
+}
+
 token_T* lexer_collect_id(lexer_T* lexer)
 {
     // Allocating memory for string
@@ -160,4 +199,18 @@ char* lexer_get_current_char_as_string(lexer_T* lexer)
     str[1] = '\0';
 
     return str;
+}
+
+void lexer_skip_comment(lexer_T* lexer)
+{
+    while (lexer->c != '\n')
+    {
+        lexer_advance(lexer);
+    }
+
+    // Advance past the newline character
+    if (lexer->c == '\n')
+    {
+        lexer_advance(lexer);
+    }
 }

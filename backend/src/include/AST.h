@@ -16,6 +16,8 @@ typedef struct AST_STRUCT
         AST_IF,
         AST_ELSEIF,
         AST_ELSE,
+        AST_NUMBER,
+        AST_BINOP,
         AST_NOOP // No operation
     } type;
 
@@ -58,6 +60,14 @@ typedef struct AST_STRUCT
     struct AST_STRUCT** if_elseif_bodies;
     size_t if_elseif_bodies_size;
     struct AST_STRUCT* if_else_body;
+
+    /* AST_NUMBER */
+    int number_value;
+
+    /* AST_BINOP */
+    struct AST_STRUCT* binop_left; // left operand
+    struct AST_STRUCT* binop_right; // right operand
+    int op; // operator
 
 } AST_T;
 

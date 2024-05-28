@@ -11,14 +11,42 @@ static AST_T* builtin_function_print(visitor_T* visitor, AST_T** args, int args_
 
         switch (visited_ast->type)
         {
-        case AST_STRING: printf("%s\n", visited_ast->string_value);
-            break;
+            case AST_STRING: printf("%s", visited_ast->string_value);
+                break;
 
-        case AST_BOOLEAN: printf("%s\n", visited_ast->boolean_value ? "true" : "false");
-            break;
-        
-        default: printf("%p\n", visited_ast);
-            break;
+            case AST_BOOLEAN: printf("%s", visited_ast->boolean_value ? "true" : "false");
+                break;
+
+            case AST_NUMBER: printf("%d", (int)visited_ast->number_value);
+                break;
+            
+            default: printf("%p", visited_ast);
+                break;
+        }
+    }
+
+    return init_ast(AST_NOOP);
+}
+
+static AST_T* builtin_function_println(visitor_T* visitor, AST_T** args, int args_size)
+{
+    for (int i = 0; i < args_size; i++)
+    {
+        AST_T* visited_ast = visitor_visit(visitor, args[i]);
+
+        switch (visited_ast->type)
+        {
+            case AST_STRING: printf("%s\n", visited_ast->string_value);
+                break;
+
+            case AST_BOOLEAN: printf("%s\n", visited_ast->boolean_value ? "true" : "false");
+                break;
+
+            case AST_NUMBER: printf("%d\n", (int)visited_ast->number_value);
+                break;
+            
+            default: printf("%p\n", visited_ast);
+                break;
         }
     }
 
@@ -68,6 +96,14 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node)
             return visitor_visit_if(visitor, node);
             break;
 
+        case AST_NUMBER: 
+            return visitor_visit_number(visitor, node);
+            break;
+
+        case AST_BINOP: 
+            return visitor_visit_binop(visitor, node);
+            break;
+
         case AST_NOOP: return node;
             break;
 
@@ -111,6 +147,11 @@ AST_T* visitor_visit_function_call(visitor_T* visitor, AST_T* node)
     if (strcmp(node->function_call_name, "display") == 0)
     {
         return builtin_function_print(visitor, node->function_call_arguments, node->function_call_arguments_size);
+    }
+
+    if (strcmp(node->function_call_name, "displayln") == 0)
+    {
+        return builtin_function_println(visitor, node->function_call_arguments, node->function_call_arguments_size);
     }
 
     AST_T* funcdef = scope_get_function_definition(node->scope, node->function_call_name);
@@ -189,6 +230,51 @@ AST_T* visitor_visit_if(visitor_T* visitor, AST_T* node)
         {
             return visitor_visit(visitor, node->if_else_body);
         }
+    }
+
+    return init_ast(AST_NOOP);
+}
+
+AST_T* visitor_visit_number(visitor_T* visitor, AST_T* node)
+{
+    return node;
+}
+
+AST_T* visitor_visit_binop(visitor_T* visitor, AST_T* node)
+{
+    AST_T* binop_left = visitor_visit(visitor, node->binop_left);
+    AST_T* binop_right = visitor_visit(visitor, node->binop_right);
+
+    int number_value = 0;
+
+    AST_T* ast_number = init_ast(AST_NUMBER);
+
+    switch (node->op)
+    {
+        case 16:
+            ast_number->number_value = (binop_left->number_value + binop_right->number_value);
+            return ast_number;
+            
+        case 17:
+            ast_number->number_value = (binop_left->number_value - binop_right->number_value);
+            return ast_number;
+
+        case 18:
+            ast_number->number_value = (binop_left->number_value * binop_right->number_value);
+            return ast_number;
+
+        case 19:
+            if (binop_right->number_value == 0)
+            {
+                printf("Division by zero error \n");
+                exit(1);
+            }
+
+            ast_number->number_value = (binop_left->number_value / binop_right->number_value);
+            return ast_number;
+
+        default:
+            break;
     }
 
     return init_ast(AST_NOOP);

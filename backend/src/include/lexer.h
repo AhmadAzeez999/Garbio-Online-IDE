@@ -30,4 +30,10 @@ token_T* lexer_advance_with_token(lexer_T* lexer, token_T* token);
 // This will convert char c into a string
 char* lexer_get_current_char_as_string(lexer_T* lexer);
 
+// This will define how to parse a number
+token_T* lexer_collect_number(lexer_T* lexer);
+
+// To skip comments
+void lexer_skip_comment(lexer_T* lexer);
+
 #endif

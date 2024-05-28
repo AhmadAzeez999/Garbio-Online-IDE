@@ -94,39 +94,68 @@ AST_T* parser_parse_statements(parser_T* parser, scope_T* scope)
 
 AST_T* parser_parse_expression(parser_T* parser, scope_T* scope)
 {
+    return parser_parse_binop(parser, scope);
+}
+
+AST_T* parser_parse_binop(parser_T* parser, scope_T* scope)
+{
+    AST_T* binop_left = parser_parse_primary(parser, scope);
+
+    while (
+        parser->current_token->type == TOKEN_PLUS ||
+        parser->current_token->type == TOKEN_MINUS ||
+        parser->current_token->type == TOKEN_MUL ||
+        parser->current_token->type == TOKEN_DIV
+    )
+    {
+        int op = parser->current_token->type;
+        parser_eat(parser, op);
+
+        AST_T* binop_right = parser_parse_primary(parser, scope);
+
+        AST_T* binop = init_ast(AST_BINOP);
+        binop->binop_left = binop_left;
+        binop->binop_right = binop_right;
+        binop->op = op;
+        binop->scope = scope;
+
+        binop_left = binop;
+    }
+
+    return binop_left;
+}
+
+AST_T* parser_parse_primary(parser_T* parser, scope_T* scope)
+{
     switch (parser->current_token->type)
     {
         case TOKEN_STRING: 
             return parser_parse_string(parser, scope);
-            break;
 
         case TOKEN_ID: 
             return parser_parse_id(parser, scope);
-            break;
 
         case TOKEN_TRUE: 
             return parser_parse_boolean(parser, scope, 1);
-            break;
 
         case TOKEN_FALSE: 
             return parser_parse_boolean(parser, scope, 0);
-            break;
+
+        case TOKEN_NUMBER: 
+            return parser_parse_number(parser, scope);
+        
+        case TOKEN_LEFTPAREN:
+            parser_eat(parser, TOKEN_LEFTPAREN);
+            AST_T* expression = parser_parse_expression(parser, scope);
+            parser_eat(parser, TOKEN_RIGHTPAREN);
+
+            return expression;
         
         default:
             break;
     }
 
     return init_ast(AST_NOOP);
-}
-
-AST_T* parser_parse_factor(parser_T* parser, scope_T* scope)
-{
-    
-}
-
-AST_T* parser_parse_term(parser_T* parser, scope_T* scope)
-{
-
 }
 
 AST_T* parser_parse_function_call(parser_T* parser, scope_T* scope)
@@ -353,3 +382,15 @@ AST_T* parser_parse_if(parser_T* parser, scope_T* scope)
     return ast_if;
 }
 
+AST_T* parser_parse_number(parser_T* parser, scope_T* scope)
+{
+    AST_T* ast_number = init_ast(AST_NUMBER);
+    
+    // Converting string to a float
+    ast_number->number_value = atof(parser->current_token->value);
+    parser_eat(parser, TOKEN_NUMBER);
+
+    ast_number->scope = scope;
+
+    return ast_number;
+}
