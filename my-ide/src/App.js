@@ -18,7 +18,7 @@ const App = () =>
 		// Removing all tabs from the code
 		const cleanedCode = code.replace(/\t/g, '');
 	
-		const response = await fetch('http://localhost:5000/run', 
+		const response = await fetch('https://garbio-ide.glitch.me/run', 
 		{
 			method: 'POST',
 			headers: 
