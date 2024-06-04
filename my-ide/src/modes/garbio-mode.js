@@ -16,12 +16,12 @@ CodeMirror.defineMode("garbio", function()
                 return "string";
             }
 
-            if (stream.match(/if|else|while/)) 
+            if (stream.match(/if|else|while|return/)) 
             {
                 return "keyword";
             }
 
-            if (stream.match(/function|var/)) 
+            if (stream.match(/function|var|int|float|char|string|any/)) 
             {
                 return "def";
             }

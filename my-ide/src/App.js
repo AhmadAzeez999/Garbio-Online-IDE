@@ -32,7 +32,6 @@ const App = () =>
 
 	const runCode = async () => 
 	{
-		console.log("WOrks");
 		// Removing all tabs from the code
 		const cleanedCode = code.replace(/\t/g, '');
 	
