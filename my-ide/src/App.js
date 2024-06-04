@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import Editor from './components/Editor';
-import Output from './components/Output';
+import React, { useEffect, useState } from 'react';
+import Editor from './components/Editor/Editor';
+import Output from './components/Output/Output';
 import './App.css';
 
 const App = () => 
@@ -13,8 +13,26 @@ const App = () =>
 		setCode(newCode);
 	};
 
+	useEffect(() =>
+	{
+		const handleKeyDown = (event) =>
+		{
+			if (event.key === 'F2')
+			{
+				event.preventDefault();
+				runCode();
+			}
+		};
+
+		document.addEventListener('keydown', handleKeyDown);
+
+		// Cleanup
+		return () => document.removeEventListener('keydown', handleKeyDown);
+	});
+
 	const runCode = async () => 
 	{
+		console.log("WOrks");
 		// Removing all tabs from the code
 		const cleanedCode = code.replace(/\t/g, '');
 	
@@ -35,10 +53,11 @@ const App = () =>
 
 	return (
 		<div className="App">
-		<h1>Garbio IDE</h1>
-		<Editor onCodeChange={handleCodeChange} />
-		<button onClick={runCode}>Run</button>
-		<Output output={output} />
+			<h1>Garbio IDE</h1>
+			<Editor onCodeChange={handleCodeChange} />
+			<button className='run-button' onClick={runCode}>Run</button>
+			<p>Or press 'F2'</p>
+			<Output output={output} />
 		</div>
 	);
 };

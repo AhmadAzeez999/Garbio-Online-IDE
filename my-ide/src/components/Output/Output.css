@@ -1,0 +1,13 @@
+.output 
+{
+	margin-top: 20px;
+	padding: 10px;
+	background-color: #000000;
+	color: #ffffff;
+	border: 1px solid #ddd;
+	width: 80%;
+	max-height: 300px;
+	text-align: left;
+    overflow-wrap: break-word;
+	overflow-y: scroll;
+}
